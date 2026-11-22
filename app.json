@@ -39,6 +39,16 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "extra": {}
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "bea532d4-7808-44e4-8ce6-bd8d93d470a7"
+      }
+    },
+    "owner": "bg_hr68"
   }
 }
