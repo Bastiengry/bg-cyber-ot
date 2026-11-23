@@ -17,9 +17,16 @@ MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
   (Modbus, DNP3, S7comm, OPC UA), landmark attacks, secure architecture, hardening,
   detection & response, standards (IEC 62443, NIS2, ATT&CK for ICS).
 - **Validation quizzes** (35 questions, with explained answers, target score 80%).
-- **3 hands-on labs**:
+- **5 hands-on labs**:
   - **Modbus console under attack**: simulation of a PLC over Modbus/TCP — asset inventory,
     baseline, detection of an unauthorized FC6 write, incident response (restore the tampered value + block the intruder).
+  - **IT → OT pivot (attack + defense)**: replay how a phished workstation pivots to the process
+    network through a dual-homed maintenance server, then switch to the defender's chair (containment,
+    zone firewall deny IT→OT, bastion for maintenance access).
+  - **Danfoss forced defrost (2026, real incident)**: replay the actual October 2026 attack on
+    ~700 French supermarkets — internet-exposed controllers, auth bypass, command injection,
+    unlimited defrost cycle — then the defense (remove exposure, patch/migrate EOL models, strict
+    security level, temperature alerts outside the controller).
   - **Log triage**: 12 logs from an industrial site to classify as normal / suspicious,
     with explanations.
   - **Purdue zoning**: place factory assets in the right levels (0-1, 2, 3, 3.5, 4-5).

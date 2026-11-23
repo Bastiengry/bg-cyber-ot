@@ -16,9 +16,17 @@ Oldsmar).
   (Modbus, DNP3, S7comm, OPC UA), attaques marquantes, architecture sécurisée, durcissement,
   détection et réponse, référentiels (IEC 62443, NIS2, ATT&CK for ICS).
 - **Quiz de validation** (35 questions, corrigé commenté, objectif 80 %).
-- **3 ateliers pratiques** :
+- **5 ateliers pratiques** :
   - **Console Modbus sous attaque** : simulation d'un PLC en Modbus/TCP — inventaire, baseline,
     détection d'une écriture FC6 non autorisée, réponse (restauration de la valeur altérée + blocage de l'intrus).
+  - **Pivot IT → OT (attaque + défense)** : rejouez la façon dont un poste bureautique compromis
+    rebondit vers le réseau procédé via un serveur de maintenance double patte, puis passez côté
+    défense (confinement, deny IT→OT au pare-feu de zone, bastion pour l'accès maintenance).
+  - **Dégivrage forcé : Danfoss (incident réel de 2026)** : rejouez l'attaque d'octobre 2026
+    contre ≈700 magasins français — contrôleurs exposés sur Internet, contournement
+d'authentification, injection de commandes, dégivrage forcé sans limite — puis la défense
+    (masquage des interfaces, patch/migration des modèles EOL, niveau de sécurité Strict, alertes
+    de température indépendantes du contrôleur).
   - **Triage de journaux** : 12 journaux d'un site industriel à classer normal / suspect, avec
     explications.
   - **Zonage Purdue** : replacer les actifs d'une usine dans les bons niveaux (0-1, 2, 3, 3.5, 4-5).

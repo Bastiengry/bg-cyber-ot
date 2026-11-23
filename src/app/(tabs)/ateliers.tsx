@@ -2,31 +2,8 @@ import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { Card, Pill, Screen, Title } from '@/components/ui';
 import { Colors, Spacing } from '@/constants/theme';
+import { LABS } from '@/data/labs-registry';
 import { useProgress } from '@/lib/progress';
-
-const LABS = [
-  {
-    id: 'modbus',
-    emoji: '🛠️',
-    title: 'Console Modbus sous attaque',
-    subtitle: 'Inventaire, baseline, détection d’une écriture non autorisée, réponse',
-    tag: 'Simulation',
-  },
-  {
-    id: 'triage',
-    emoji: '📰',
-    title: 'Triage de journaux',
-    subtitle: '12 journaux d’un site industriel : normal ou suspect ?',
-    tag: 'Analyse SOC',
-  },
-  {
-    id: 'zonage',
-    emoji: '🏗️',
-    title: 'Zonage Purdue',
-    subtitle: 'Placez les actifs d’une usine dans les bonnes zones',
-    tag: 'Architecture',
-  },
-] as const;
 
 export default function Ateliers() {
   const { isLabDone, state } = useProgress();
@@ -37,8 +14,7 @@ export default function Ateliers() {
 
       {LABS.map((lab) => {
         const done = isLabDone(lab.id);
-        const score =
-          lab.id === 'triage' ? state.quizScores['lab-triage'] : state.quizScores['lab-zonage'];
+        const score = state.quizScores[`lab-${lab.id}`];
         return (
           <Card key={lab.id} onPress={() => router.push({ pathname: '/lab/[id]', params: { id: lab.id } })} style={styles.card}>
             <View style={{ flexDirection: 'row', gap: Spacing.md, alignItems: 'center' }}>
@@ -55,9 +31,10 @@ export default function Ateliers() {
 
       <Text style={styles.note}>
         Ces ateliers simulent ce qu’un ingénieur cyber-OT rencontre : une écriture Modbus suspecte
-        dans une consigne, un flux de logs mélangant trafic normal et hostile, une carte réseau à
-        segmenter. Traitez-les comme des exercices d’entraînement : décrivez votre raisonnement à
-        voix haute avant de valider.
+        dans une consigne, un rebond récent du réseau bureautique vers le procédé, l’incident Danfoss
+        de 2026, un flux de logs mêlant trafic normal et hostile, une carte réseau à segmenter.
+        Traitez-les comme des exercices d’entraînement : décrivez votre raisonnement à voix haute
+        avant de valider.
       </Text>
     </Screen>
   );

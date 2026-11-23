@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { COURSE_MODULES } from '@/data/courses';
+import { LABS } from '@/data/labs-registry';
 import { QUIZ_QUESTIONS } from '@/data/quizzes';
 import { TRIAGE_LOGS, ZONAGE_ITEMS } from '@/data/labs-data';
 
@@ -39,7 +40,7 @@ type ProgressApi = {
 
 const ProgressContext = createContext<ProgressApi | null>(null);
 
-export const LABS_TOTAL = 3;
+export const LABS_TOTAL = LABS.length;
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<ProgressState>(EMPTY);

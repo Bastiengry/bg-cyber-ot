@@ -6,6 +6,8 @@ import { Colors, Spacing } from '@/constants/theme';
 import type { LabResult } from '@/lib/labs';
 import { useProgress } from '@/lib/progress';
 import ModbusLab from '@/labs/modbus-lab';
+import PivotLab from '@/labs/pivot-lab';
+import DanfossLab from '@/labs/danfoss-lab';
 import TriageLab from '@/labs/triage-lab';
 import ZonageLab from '@/labs/zonage-lab';
 
@@ -32,6 +34,22 @@ export default function LabScreen() {
     );
   }
 
+  if (id === 'pivot') {
+    return (
+      <Screen>
+        <PivotLab onCompleted={() => onComplete()} />
+      </Screen>
+    );
+  }
+
+  if (id === 'danfoss') {
+    return (
+      <Screen>
+        <DanfossLab onCompleted={() => onComplete()} />
+      </Screen>
+    );
+  }
+
   if (id === 'triage') {
     return (
       <Screen>
@@ -52,7 +70,9 @@ export default function LabScreen() {
     <Screen>
       <Card>
         <Text style={{ color: Colors.text, fontWeight: '700' }}>Atelier introuvable</Text>
-        <Text style={{ color: Colors.muted, marginTop: Spacing.sm }}>Ateliers disponibles : modbus, triage, zonage.</Text>
+        <Text style={{ color: Colors.muted, marginTop: Spacing.sm }}>
+        Ateliers disponibles : modbus, pivot, danfoss, triage, zonage.
+      </Text>
       </Card>
     </Screen>
   );
