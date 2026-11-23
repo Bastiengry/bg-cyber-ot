@@ -11,6 +11,12 @@ const OBJECTIVES = [
 const PHASES: LabPhase[] = [
   {
     title: 'Reconnaissance du VLAN IT',
+    commandLines: [
+      '> nmap -sS -Pn -T2 10.10.0.0/24',
+      '[+] 10.10.0.23 PC-DEV-12 (compromis)',
+      '[+] 10.10.0.51 SRV-MAINT01 — deux interfaces : IT + 10.60.0.51',
+      '[!] Cible du pivot identifiée : double patte IT/OT',
+    ],
     brief:
       'Un hameçonnage vieux de trois semaines vous a donné un pied dans le poste de développement PC-DEV-12 (10.10.0.23, VLAN IT). Vous jouez le rôle de l’attaquant : restez discret, sur ce site l’IT et l’OT cohabitent.',
     choices: [
@@ -36,6 +42,12 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Collecte d’identifiants',
+    commandLines: [
+      '> mimikatz # sekurlsa::logonpasswords',
+      '[+] En cache : SRV-MAINT01\service-maint (mot de passe jamais changé)',
+      '> route print | findstr 10.60',
+      '[+] Route statique 10.60.0.0/24 via 10.10.0.51',
+    ],
     brief:
       'PC-DEV-12 est infecté depuis des semaines. Quel gain décisif pour la suite de l’attaque ?',
     choices: [
@@ -61,6 +73,12 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Le rebond vers l’OT',
+    commandLines: [
+      '> ssh service-maint@10.10.0.51',
+      '[+] Session ouverte sur la double patte',
+      '> ssh -J service-maint@10.10.0.51 admin@10.60.1.11',
+      '[+] Routé vers le VLAN procédé — flux de maintenance autorisé par le pare-feu de zone',
+    ],
     brief:
       'Vous tenez le compte « service-maint » sur SRV-MAINT01, un serveur double patte IT/OT hérité d’un projet d’intégration, jamais remis en question.',
     choices: [
@@ -86,6 +104,10 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Confirmation de l’accès procédé',
+    commandLines: [
+      '> snap7 read --host 10.60.1.11 --block DB1.DBD0',
+      '[+] Lecture fiable — écriture possible : procédé sous contrôle',
+    ],
     brief:
       'Depuis SRV-MAINT01, vous atteignez PLC-CH-01. Quelle action vous prouve que vous contrôlez le procédé ?',
     choices: [
@@ -111,6 +133,27 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Changement de casquette : défense',
+    commandLines: [
+      '> conf t',
+      '  vlan 61',
+      '   name MAINTENANCE',
+      '  vlan 60',
+      '   name PROCES',
+      '  ip access-list extended FROM-IT',
+      '   deny   ip 10.10.0.0 0.0.0.255 10.60.0.0 0.0.0.255',
+      '   permit  tcp host 10.10.0.51 host 10.60.1.11 eq 102',
+      '   deny   ip any 10.60.0.0 0.0.0.255 log',
+      '  interface Vlan61',
+      '   description PATTE-OT-SRV-MAINT',
+      '   ip access-group FROM-IT in',
+      'interface range Gi0/10-24',
+      ' switchport mode access',
+      ' switchport access vlan 60',
+      ' no cdp enable',
+      '[+] Aucun flux IT → procédé, sauf SRV-MAINT01 → PLC-CH-01:102 (S7)',
+      '[+] PC-DEV-12 confiné (isolation réseau, image mémoire acquise)',
+      '[+] Télé-maintenance : bastion dédié + MFA, comptes nominatifs',
+    ],
     brief:
       'Vous changez de rôle : vous êtes maintenant l’ingénieur cyber-OT du même site. Comment couper définitivement ce chemin de rebond sans arrêter la production ?',
     choices: [

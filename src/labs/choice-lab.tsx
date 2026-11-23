@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, PrimaryButton } from '@/components/ui';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 
@@ -9,6 +9,8 @@ export type LabPhase = {
   title: string;
   brief: string;
   choices: LabChoice[];
+  commandLines?: string[];
+  usb?: boolean;
 };
 
 type Props = {
@@ -24,12 +26,130 @@ type Props = {
 
 type LogLine = { time: string; text: string; tone: 'muted' | 'accent' | 'red' | 'amber' };
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function UsbInsertion() {
+  const [slide] = useState(() => new Animated.Value(0));
+  const [inserted, setInserted] = useState(false);
+
+  useEffect(() => {
+    Animated.timing(slide, {
+      toValue: 1,
+      duration: 1600,
+      easing: Easing.inOut(Easing.quad),
+      useNativeDriver: true,
+    }).start(() => setInserted(true));
+  }, [slide]);
+
+  const dx = slide.interpolate({ inputRange: [0, 1], outputRange: [130, 0] });
+
+  return (
+    <View style={termStyles.usbRow}>
+      <View style={termStyles.device}>
+        <Text style={termStyles.deviceLabel}>POSTE STEP 7</Text>
+        <View style={[termStyles.slot, inserted && termStyles.slotLit]} />
+        {inserted && <Text style={termStyles.usbMsg}>[+] clé détectée</Text>}
+      </View>
+      <View style={termStyles.stickTrack}>
+        <Animated.View style={[termStyles.stick, { transform: [{ translateX: dx }] }]}>
+          <View style={termStyles.stickBody}>
+            <View style={termStyles.stickLight} />
+          </View>
+          <View style={termStyles.stickMetal} />
+          <View style={termStyles.stickHole} />
+        </Animated.View>
+      </View>
+    </View>
+  );
+}
+
+function Terminal({ lines }: { lines: string[] }) {
+  const [shown, setShown] = useState<string[]>([]);
+  const [current, setCurrent] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let li = 0;
+
+    const advance = () => {
+      li += 1;
+      if (li < lines.length) processLine(lines[li]);
+    };
+
+    const processLine = (line: string) => {
+      if (cancelled) return;
+      if (line.startsWith('>')) {
+        let ci = 0;
+        const typeStep = () => {
+          if (cancelled) return;
+          if (ci <= line.length) {
+            setCurrent(line.slice(0, ci));
+            ci += 1;
+            timers.push(setTimeout(typeStep, 26));
+          } else {
+            setShown((s) => [...s, line]);
+            setCurrent(null);
+            timers.push(setTimeout(advance, 300));
+          }
+        };
+        typeStep();
+      } else {
+        setShown((s) => [...s, line]);
+        timers.push(setTimeout(advance, 260));
+      }
+    };
+
+    if (lines.length) processLine(lines[0]);
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [lines]);
+
+  return (
+    <View style={termStyles.term}>
+      <View style={termStyles.termBar}>
+        {['#ff5f56', '#ffbd2e', '#27c93f'].map((c) => (
+          <View key={c} style={[termStyles.dot, { backgroundColor: c }]} />
+        ))}
+        <Text style={termStyles.termTitle}>console</Text>
+      </View>
+      <View style={termStyles.termBody}>
+        {shown.map((l, i) => (
+          <Text key={i} style={[termStyles.termText, l.startsWith('>') && termStyles.termCmd]}>
+            {l}
+          </Text>
+        ))}
+        {current !== null && (
+          <Text style={termStyles.termCmd}>
+            {current}
+            <Text style={termStyles.cursor}>▌</Text>
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
 export default function ChoiceLab({ emoji, title, intro, objectives, phases, finalNote, visual, onCompleted }: Props) {
   const [started, setStarted] = useState(false);
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [objectivesDone, setObjectivesDone] = useState<boolean[]>(() => objectives.map(() => false));
   const [feedback, setFeedback] = useState<{ text: string; correct: boolean } | null>(null);
   const [log, setLog] = useState<LogLine[]>([]);
+  const [terminal, setTerminal] = useState<string[] | null>(null);
+  const [terminalKey, setTerminalKey] = useState(0);
+  const [showUsb, setShowUsb] = useState(false);
+
+  const [orders] = useState(() => phases.map((p) => shuffle(p.choices.map((_, i) => i))));
 
   const addLog = (text: string, tone: LogLine['tone'] = 'muted') => {
     const time = new Date().toTimeString().slice(0, 8);
@@ -61,6 +181,11 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
       return;
     }
     addLog(choice.feedback, 'accent');
+    if (phase.commandLines) {
+      setTerminal(phase.commandLines);
+      setTerminalKey((k) => k + 1);
+      setShowUsb(Boolean(phase.usb));
+    }
     setObjectivesDone((prev) => {
       if (prev[phaseIdx]) return prev;
       const next = [...prev];
@@ -70,6 +195,8 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
     setPhaseIdx((p) => p + 1);
     setFeedback(null);
   };
+
+  const currentChoices = allDone ? [] : orders[phaseIdx].map((i) => phase.choices[i]);
 
   return (
     <View style={{ flex: 1, gap: Spacing.md }}>
@@ -93,7 +220,7 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
           <Text style={styles.phaseTag}>Étape {phaseIdx + 1} / {phases.length}</Text>
           <Text style={styles.sectionTitle}>{phase.title}</Text>
           <Text style={styles.introText}>{phase.brief}</Text>
-          {phase.choices.map((choice, i) => (
+          {currentChoices.map((choice, i) => (
             <Pressable
               key={i}
               onPress={() => pick(choice)}
@@ -105,6 +232,13 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
           {feedback && !feedback.correct && (
             <Text style={styles.feedbackBad}>{feedback.text}</Text>
           )}
+        </Card>
+      )}
+
+      {(terminal || showUsb) && (
+        <Card style={{ maxHeight: 340 }}>
+          {showUsb && <UsbInsertion />}
+          {terminal && <Terminal key={terminalKey} lines={terminal} />}
         </Card>
       )}
 
@@ -154,4 +288,78 @@ const styles = StyleSheet.create({
   logRed: { color: Colors.red },
   logAccent: { color: Colors.accent },
   logAmber: { color: Colors.amber },
+});
+
+const termStyles = StyleSheet.create({
+  term: {
+    backgroundColor: '#0B0F14',
+    borderRadius: Radius.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+    marginTop: Spacing.sm,
+  },
+  termBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 6,
+    backgroundColor: Colors.cardAlt,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  termTitle: { color: Colors.muted, fontSize: 10, marginLeft: 4 },
+  termBody: { padding: Spacing.sm, gap: 2 },
+  termText: { color: Colors.muted, fontSize: 11, lineHeight: 16, fontFamily: 'monospace' },
+  termCmd: { color: Colors.accent, fontSize: 11, lineHeight: 16, fontFamily: 'monospace' },
+  cursor: { color: Colors.accent },
+  usbRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    gap: Spacing.md,
+  },
+  device: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  deviceLabel: { color: Colors.muted, fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  slot: {
+    width: 42,
+    height: 7,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+  },
+  slotLit: { backgroundColor: Colors.accent },
+  usbMsg: { color: Colors.accent, fontSize: 10 },
+  stickTrack: { position: 'relative', width: 150, height: 34, justifyContent: 'center' },
+  stick: {
+    position: 'absolute',
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stickBody: {
+    width: 30,
+    height: 20,
+    backgroundColor: Colors.blue,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingRight: 3,
+  },
+  stickLight: { width: 4, height: 4, borderRadius: 2, backgroundColor: Colors.accent },
+  stickMetal: {
+    width: 18,
+    height: 12,
+    backgroundColor: '#9AA7B4',
+  },
+  stickHole: {
+    width: 4,
+    height: 12,
+    backgroundColor: '#4A5560',
+  },
 });

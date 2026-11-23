@@ -14,6 +14,13 @@ const OBJECTIVES = [
 const PHASES: LabPhase[] = [
   {
     title: 'Franchir l’air gap',
+    usb: true,
+    commandLines: [
+      '[+] USBSTOR  DISK&VEN_KINGSTON montée sur E:',
+      '[+] Raccourci .LNK ouvert — exploitation MS10-046 (jour zéro)',
+      '[+] wtr.dll injecté dans explorer.exe — 4 jour-zéro au total',
+      '[*] Signatures volées Realtek/JMicron : antivirus aveugle',
+    ],
     brief:
       'Natanz, usine d’enrichissement : le réseau industriel est cloisonné, aucune porte vers Internet. Vous êtes sur le réseau bureautique d’un fournisseur de l’agence. Comment introduire la charge utile ?',
     choices: [
@@ -39,6 +46,12 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Reconnaissance et injection',
+    commandLines: [
+      '> regsvr32 /s s7otbxsx.dll',
+      '[+] Step 7 intercepté : les blocs malveillants sont invisibles côté ingénierie',
+      '> api7 push --plc S7-315-2 --block DB99,FB100   (simplifié)',
+      '[!] Empreinte confirmée : S7-315/417, Fararo Paya/Vacon, 807–1 210 Hz',
+    ],
     brief:
       'Un poste a été infecté. La charge ne doit s’activer que sur la bonne cible, pour rester invisible partout ailleurs.',
     choices: [
@@ -64,6 +77,12 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Devenir invisible (man-in-the-middle)',
+    commandLines: [
+      '> profibus sniff -i eth1 -w baseline-13j.pcap',
+      '[+] 13 jours de valeurs nominales enregistrées',
+      '> replay --src baseline-13j.pcap --tap pupitre --loop',
+      '[+] Pupitre : cascade « parfaite » affichée pendant le sabotage',
+    ],
     brief:
       'Vous pouvez maintenant perturber les centrifugeuses. Problème : chaque variation est visible sur les pupitres et déclenche des alarmes. Comment saboter sans être vu ?',
     choices: [
@@ -89,6 +108,12 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Le sabotage (oscillation des fréquences)',
+    commandLines: [
+      '> drive setfreq --cascade IR-1 --freq 1410 --for 15m',
+      '> drive setfreq --cascade IR-1 --freq 2 --for 50m',
+      '> drive setfreq --cascade IR-1 --freq 1064',
+      '[+] Cycle armé en boucle — sur-vitesse puis quasi-arrêt : fatigue du rotor',
+    ],
     brief:
       'Fréquence nominale du rotor IR-1 : 1 064 Hz (vitesse tangentielle ~334 m/s). Le rotor en aluminium casse vers 1 400–1 432 Hz (~440–450 m/s). Comment détruire en évitant une panne brutale et visible ?',
     choices: [
@@ -114,6 +139,14 @@ const PHASES: LabPhase[] = [
   },
   {
     title: 'Changement de casquette : défense',
+    commandLines: [
+      '> gpedit : supports amovibles = « Interdire lecture/écriture » (postes OT)',
+      '[+] Canal USB fermé — la voie principale d’entrée est neutralisée',
+      '> s7-sign verify --project FEP --against reference.dbf',
+      '[!] Blocs inconnus DB99/FB100 retrouvés → recharger les programmes signés',
+      '> capteur externe : ALERTE si vibration > 4,5 mm/s ou |f - 1 064 Hz| > 15 Hz',
+      '[+] Mesure indépendante du controller : le rejet des valeurs rejouées est détecté',
+    ],
     brief:
       'Vous êtes maintenant l’ingénieur cyber-OT du site. Les centrifugeuses cassent trop souvent, le pupitre affiche pourtant des valeurs parfaites. Par où commencer ?',
     choices: [
