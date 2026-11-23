@@ -18,8 +18,7 @@ Oldsmar).
 - **Quiz de validation** (35 questions, corrigé commenté, objectif 80 %).
 - **3 ateliers pratiques** :
   - **Console Modbus sous attaque** : simulation d'un PLC en Modbus/TCP — inventaire, baseline,
-    détection d'une écriture FC6 non autorisée, réponse (restauration de la consigne + blocage
-    de l'intrus).
+    détection d'une écriture FC6 non autorisée, réponse (restauration de la valeur altérée + blocage de l'intrus).
   - **Triage de journaux** : 12 journaux d'un site industriel à classer normal / suspect, avec
     explications.
   - **Zonage Purdue** : replacer les actifs d'une usine dans les bons niveaux (0-1, 2, 3, 3.5, 4-5).

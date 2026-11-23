@@ -22,7 +22,7 @@ const OBJECTIVES = [
   'Exécuter une lecture complète (FC1 + FC3) pour établir l’inventaire',
   'Établir la baseline : relever la température procédé (40002)',
   'Détecter l’écriture non autorisée dans la température (40002)',
-  'Restaurer la consigne correcte (85 hPa) puis bloquer la station inconnue',
+  'Restaurer la température nominale (71 °C) puis bloquer la station inconnue',
 ];
 
 export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) {
@@ -37,7 +37,7 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
   const [blocked, setBlocked] = useState(false);
   const [attackActive, setAttackActive] = useState(false);
   const attackRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const seen = useRef({ fc1: false, fc3: false, baseline: false, restored: false });
+  const seen = useRef({ fc1: false, fc3: false, baseline: false });
 
   const addLog = useCallback((text: string, tone: LogLine['tone'] = 'muted') => {
     const time = new Date().toTimeString().slice(0, 8);
@@ -47,10 +47,6 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
   const checkFirstObjective = useCallback(() => {
     if (seen.current.fc1 && seen.current.fc3) setObjectivesDone((p) => (p[0] ? p : Object.assign([...p], { 0: true })));
   }, []);
-
-  const completeLab = useCallback(() => {
-    onCompleted();
-  }, [onCompleted]);
 
   const startAttack = () => {
     if (attackRef.current) return;
@@ -67,6 +63,10 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
       addLog('10.42.8.66 → PLC_P101 | FC6 write register 40002 = ' + bad, 'red');
     }, 4000);
   };
+
+  useEffect(() => {
+    if (objectivesDone.every(Boolean)) onCompleted();
+  }, [objectivesDone, onCompleted]);
 
   useEffect(() => {
     return () => {
@@ -95,7 +95,7 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
           seen.current.baseline = true;
           setObjectivesDone((p) => (p[1] ? p : Object.assign([...p], { 1: true })));
         }
-        if (seen.current.restored && registers[1] === 71) {
+        if (blocked && registers[1] === 71) {
           setObjectivesDone((p) => {
             if (p[3]) return p;
             const next = [...p];
@@ -133,9 +133,8 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
           return next;
         });
         addLog(`SCADA → PLC_P101 | FC6 write register ${REGISTERS[reg - 1].addr} = ${value}`);
-        if (reg === 2 && value === 85) {
-          seen.current.restored = true;
-          addLog('Consigne restaurée à 85 hPa. Vérifiez le retour à la normale par FC3.', 'accent');
+        if (reg === 2 && value === 71) {
+          addLog('Température restaurée à 71 °C. Vérifiez le retour à la normale par FC3.', 'accent');
         }
         break;
       }
@@ -150,7 +149,6 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
     }
     addLog('Pare-feu de zone : règle DENY 10.42.8.66 → 10.42.1.101:502 appliquée', 'accent');
     addLog('Rappel : après l’incident, ouvrez une investigation (comment cette station a-t-elle atteint le VLAN procédé ?)', 'amber');
-    completeLab();
   };
 
   if (!started) {
@@ -162,7 +160,7 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
           Vous êtes en astreinte sur un process de traitement d’eau. Le SCADA parle Modbus/TCP au
           PLC_P101 (10.42.1.101, port 502). Une écriture non authentifiée suffit à agir sur le
           procédé.{'\n\n'}Objectifs : 1) inventaire des variables, 2) baseline des valeurs normales,
-          3) détection d’une écriture suspecte, 4) réponse (restauration de la consigne puis
+          3) détection d’une écriture suspecte, 4) réponse (restauration de la température puis
           blocage de la station).
         </Text>
         <PrimaryButton label="Lancer la simulation" onPress={() => setStarted(true)} style={{ marginTop: Spacing.lg }} />
@@ -233,7 +231,7 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
                 keyboardType="number-pad"
                 value={valueText}
                 onChangeText={(t) => setValueText(t.replace(/[^0-9]/g, ''))}
-                placeholder={fc === 'FC5' ? '1' : '85'}
+                placeholder={fc === 'FC5' ? '1' : '71'}
                 placeholderTextColor={Colors.muted}
               />
             </View>
@@ -259,8 +257,10 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
         <Card>
           <Text style={styles.sectionTitle}>Réponse à incident</Text>
           <Text style={styles.introText}>
-            Deux actions : restaurer la consigne (FC6, registre 2, valeur 85) puis bloquer la
-            station inconnue au pare-feu de zone.
+            Deux actions : restaurer la température (FC6, registre 2, valeur 71) et bloquer la
+            station inconnue au pare-feu de zone. L’ordre importe peu (tant que la station
+            écrit encore, elle peut écraser votre restauration) ; terminez par une lecture FC3
+            pour confirmer le retour à la normale.
           </Text>
           <PrimaryButton
             label="Bloquer 10.42.8.66 au pare-feu de zone"
