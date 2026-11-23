@@ -3,6 +3,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { Colors, Spacing } from '@/constants/theme';
 import { Card, Pill, ProgressBar, Screen, Title } from '@/components/ui';
 import { COURSE_MODULES } from '@/data/courses';
+import { LABS } from '@/data/labs-registry';
 import { useProgress } from '@/lib/progress';
 
 export default function Home() {
@@ -43,18 +44,15 @@ export default function Home() {
       </Card>
 
       <Text style={styles.section}>Ateliers du moment</Text>
-      <Card onPress={() => router.push({ pathname: '/lab/[id]', params: { id: 'modbus' } })}>
-        <Text style={styles.cardTitle}>🛠️ Console Modbus sous attaque</Text>
-        <Pill label={isLabDone('modbus') ? 'Terminé' : 'Détection & réponse'} tone={isLabDone('modbus') ? 'accent' : 'amber'} />
-      </Card>
-      <Card onPress={() => router.push({ pathname: '/lab/[id]', params: { id: 'triage' } })}>
-        <Text style={styles.cardTitle}>📰 Triage de journaux d’un site industriel</Text>
-        <Pill label={isLabDone('triage') ? 'Terminé' : 'Analyse SOC'} tone={isLabDone('triage') ? 'accent' : 'amber'} />
-      </Card>
-      <Card onPress={() => router.push({ pathname: '/lab/[id]', params: { id: 'zonage' } })}>
-        <Text style={styles.cardTitle}>🏗️ Zonage Purdue d’une usine</Text>
-        <Pill label={isLabDone('zonage') ? 'Terminé' : 'Architecture'} tone={isLabDone('zonage') ? 'accent' : 'amber'} />
-      </Card>
+      {LABS.map((lab) => {
+        const done = isLabDone(lab.id);
+        return (
+          <Card key={lab.id} onPress={() => router.push({ pathname: '/lab/[id]', params: { id: lab.id } })}>
+            <Text style={styles.cardTitle}>{lab.emoji} {lab.title}</Text>
+            <Pill label={done ? 'Terminé' : lab.tag} tone={done ? 'accent' : 'amber'} />
+          </Card>
+        );
+      })}
 
       <Text style={styles.section}>Comment progresser</Text>
       <Card style={{ opacity: 0.9 }}>
@@ -62,7 +60,8 @@ export default function Home() {
           1. Lisez les modules de cours, leçon par leçon.{'\n'}
           2. Validez chaque module par son quiz de 5 questions.{'\n'}
           3. Faites les ateliers pratiques : ils reprennent des situations réelles
-          (écriture Modbus non autorisée, analyse de logs, segmentation).{'\n'}
+          (écriture Modbus non autorisée, pivot IT→OT, incident Danfoss, analyse de logs,
+          segmentation).{'\n'}
           4. Votre progression est enregistrée sur l’appareil.
         </Text>
       </Card>
