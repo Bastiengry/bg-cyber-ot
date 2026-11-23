@@ -1,43 +1,63 @@
 # BG Cyber OT
 
-Application mobile (React Native + Expo) d'**entraînement à la cybersécurité OT** (Operational
-Technology / industrielle), conçue pour préparer à un métier du domaine : CYBER-OT, SOC
-industriel, ingénieurie sécurité ICS, audit d'infrastructures SCADA.
+[🇫🇷 Version française](./README.fr.md)
 
-L'orientation est la **réalité terrain** : contenu issu du modèle de Purdue, de l'IEC 62443,
-du NIST SP 800-82, de MITRE ATT&CK for ICS et d'incidents réels (Stuxnet, Industroyer, TRITON,
-Oldsmar).
+Mobile app (React Native + Expo) for **OT (Operational Technology) cybersecurity training**,
+built to prepare for a career in the field: OT cybersecurity, industrial SOC, ICS security
+engineering, SCADA infrastructure auditing.
 
-## Contenu
+The focus is **field realism**: content based on the Purdue model, IEC 62443, NIST SP 800-82,
+MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
 
-- **7 modules de cours** (21 leçons) en français : fondamentaux IT/OT, protocoles industriels
-  (Modbus, DNP3, S7comm, OPC UA), attaques marquantes, architecture sécurisée, durcissement,
-  détection et réponse, référentiels (IEC 62443, NIS2, ATT&CK for ICS).
-- **Quiz de validation** (35 questions, corrigé commenté, objectif 80 %).
-- **3 ateliers pratiques** :
-  - **Console Modbus sous attaque** : simulation d'un PLC en Modbus/TCP — inventaire, baseline,
-    détection d'une écriture FC6 non autorisée, réponse (restauration + blocage).
-  - **Triage de journaux** : 12 journaux d'un site industriel à classer normal / suspect, avec
-    explications.
-  - **Zonage Purdue** : replacer les actifs d'une usine dans les bons niveaux (0-1, 2, 3, 3.5, 4-5).
-- **Progression persistée** localement (AsyncStorage) : leçons lues, meilleurs scores, ateliers terminés.
+⚠️ Course content is currently written in French.
 
-## Démarrage
+## Content
+
+- **7 course modules** (21 lessons, in French): IT/OT fundamentals, industrial protocols
+  (Modbus, DNP3, S7comm, OPC UA), landmark attacks, secure architecture, hardening,
+  detection & response, standards (IEC 62443, NIS2, ATT&CK for ICS).
+- **Validation quizzes** (35 questions, with explained answers, target score 80%).
+- **3 hands-on labs**:
+  - **Modbus console under attack**: simulation of a PLC over Modbus/TCP — asset inventory,
+    baseline, detection of an unauthorized FC6 write, incident response (restore the setpoint
+    + block the intruder).
+  - **Log triage**: 12 logs from an industrial site to classify as normal / suspicious,
+    with explanations.
+  - **Purdue zoning**: place factory assets in the right levels (0-1, 2, 3, 3.5, 4-5).
+- **Progress persistence** (AsyncStorage): lessons read, best quiz scores, labs completed.
+
+## Getting started
 
 ```bash
 npm install
 npm start          # Expo Dev Server
 ```
 
-Puis scanner le QR code avec l'app **Expo Go** (Android/iOS), ou :
+Then scan the QR code with the **Expo Go** app (Android/iOS), or:
 
 ```bash
-npm run android    # émulateur Android
-npm run ios        # simulateur iOS (macOS)
-npm run web        # navigateur
+npm run android    # Android emulator
+npm run ios        # iOS simulator (macOS)
+npm run web        # browser
 ```
 
-## Vérifications
+### Building an APK
+
+```bash
+npx expo prebuild -p android
+cd android && ./gradlew assembleRelease
+# → android/app/build/outputs/apk/release/app-release.apk
+```
+
+or via the cloud (requires an Expo account, free tier has a monthly quota):
+
+```bash
+npx eas-cli build -p android --profile preview
+```
+
+A prebuilt signed APK is available in [`apk/`](./apk).
+
+## Checks
 
 ```bash
 npx tsc --noEmit   # typecheck
@@ -47,17 +67,17 @@ npx expo lint      # lint
 ## Stack
 
 - Expo (React Native, TypeScript, expo-router)
-- AsyncStorage pour la progression
-- Interface sombre « salle de contrôle » maison (aucune dépendance UI)
+- AsyncStorage for progress
+- Custom dark "control room" UI (no UI dependencies)
 
 ## Structure
 
 ```
 src/
-  app/            # routes expo-router (tabs, module, quiz, lab)
-  components/     # UI kit maison
-  constants/      # thème
-  data/           # cours, quiz, données des ateliers
-  labs/           # ateliers interactifs
-  lib/            # progression persistée, types
+  app/            # expo-router routes (tabs, module, quiz, lab)
+  components/     # in-house UI kit
+  constants/      # theme
+  data/           # courses, quizzes, lab datasets
+  labs/           # interactive labs
+  lib/            # persisted progress, shared types
 ```
