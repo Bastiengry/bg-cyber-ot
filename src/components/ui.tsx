@@ -3,7 +3,11 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export function Screen({ children, scroll = true }: { children: React.ReactNode; scroll?: boolean }) {
+export function Screen({ children, scroll = true, indicator = false }: {
+  children: React.ReactNode;
+  scroll?: boolean;
+  indicator?: boolean;
+}) {
   if (!scroll) {
     return (
       <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
@@ -13,7 +17,7 @@ export function Screen({ children, scroll = true }: { children: React.ReactNode;
   }
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={indicator}>
         {children}
       </ScrollView>
     </SafeAreaView>

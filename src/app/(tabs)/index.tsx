@@ -14,7 +14,7 @@ export default function Home() {
   const doneInNext = nextModule.lessons.filter((l) => isLessonDone(l.id)).length;
 
   return (
-    <Screen>
+    <Screen indicator>
       <Title subtitle="Entraînement réaliste à la cybersécurité industrielle (OT)">
         Tableau de bord
       </Title>
