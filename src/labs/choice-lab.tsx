@@ -122,7 +122,7 @@ function Terminal({ lines }: { lines: string[] }) {
         ))}
         <Text style={termStyles.termTitle}>console</Text>
       </View>
-      <View style={termStyles.termBody}>
+      <ScrollView style={termStyles.termBody} nestedScrollEnabled showsVerticalScrollIndicator>
         {shown.map((l, i) => (
           <Text key={i} style={[termStyles.termText, l.startsWith('>') && termStyles.termCmd]}>
             {l}
@@ -134,7 +134,7 @@ function Terminal({ lines }: { lines: string[] }) {
             <Text style={termStyles.cursor}>▌</Text>
           </Text>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -236,7 +236,7 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
       )}
 
       {(terminal || showUsb) && (
-        <Card style={{ maxHeight: 340 }}>
+        <Card style={{ maxHeight: 420 }}>
           {showUsb && <UsbInsertion />}
           {terminal && <Terminal key={terminalKey} lines={terminal} />}
         </Card>
@@ -311,7 +311,7 @@ const termStyles = StyleSheet.create({
   },
   dot: { width: 8, height: 8, borderRadius: 4 },
   termTitle: { color: Colors.muted, fontSize: 10, marginLeft: 4 },
-  termBody: { padding: Spacing.sm, gap: 2 },
+  termBody: { padding: Spacing.sm, gap: 2, maxHeight: 220 },
   termText: { color: Colors.muted, fontSize: 11, lineHeight: 16, fontFamily: 'monospace' },
   termCmd: { color: Colors.accent, fontSize: 11, lineHeight: 16, fontFamily: 'monospace' },
   cursor: { color: Colors.accent },
