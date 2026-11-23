@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, PrimaryButton } from '@/components/ui';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 
@@ -18,12 +18,13 @@ type Props = {
   objectives: string[];
   phases: LabPhase[];
   finalNote: string;
+  visual?: (phaseIdx: number, allDone: boolean) => ReactNode;
   onCompleted: () => void;
 };
 
 type LogLine = { time: string; text: string; tone: 'muted' | 'accent' | 'red' | 'amber' };
 
-export default function ChoiceLab({ emoji, title, intro, objectives, phases, finalNote, onCompleted }: Props) {
+export default function ChoiceLab({ emoji, title, intro, objectives, phases, finalNote, visual, onCompleted }: Props) {
   const [started, setStarted] = useState(false);
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [objectivesDone, setObjectivesDone] = useState<boolean[]>(() => objectives.map(() => false));
@@ -80,6 +81,8 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
         ))}
       </View>
 
+      {visual && <>{visual(phaseIdx, allDone)}</>}
+
       {allDone ? (
         <Card style={{ borderColor: Colors.accent }}>
           <Text style={styles.sectionTitle}>Scénario réussi ✅</Text>
@@ -105,20 +108,22 @@ export default function ChoiceLab({ emoji, title, intro, objectives, phases, fin
         </Card>
       )}
 
-      <Card style={{ maxHeight: 260 }}>
+      <Card style={{ maxHeight: 280 }}>
         <Text style={styles.sectionTitle}>Journal de bord</Text>
-        {log.length === 0 ? (
-          <Text style={styles.mono}>Aucune action enregistrée. Choisissez une action.</Text>
-        ) : (
-          log.map((l, i) => (
-            <Text
-              key={i}
-              style={[styles.mono, l.tone === 'red' && styles.logRed, l.tone === 'accent' && styles.logAccent, l.tone === 'amber' && styles.logAmber]}
-            >
-              [{l.time}] {l.text}
-            </Text>
-          ))
-        )}
+        <ScrollView style={{ maxHeight: 210 }} nestedScrollEnabled showsVerticalScrollIndicator>
+          {log.length === 0 ? (
+            <Text style={styles.mono}>Aucune action enregistrée. Choisissez une action.</Text>
+          ) : (
+            log.map((l, i) => (
+              <Text
+                key={i}
+                style={[styles.mono, l.tone === 'red' && styles.logRed, l.tone === 'accent' && styles.logAccent, l.tone === 'amber' && styles.logAmber]}
+              >
+                [{l.time}] {l.text}
+              </Text>
+            ))
+          )}
+        </ScrollView>
       </Card>
     </View>
   );

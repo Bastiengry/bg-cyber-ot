@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Card, Pill, PrimaryButton } from '@/components/ui';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 
@@ -271,25 +271,27 @@ export default function ModbusLab({ onCompleted }: { onCompleted: () => void }) 
         </Card>
       )}
 
-      <Card style={{ maxHeight: 280 }}>
+      <Card style={{ maxHeight: 300 }}>
         <Text style={styles.sectionTitle}>Journal de bord</Text>
-        {log.length === 0 ? (
-          <Text style={styles.mono}>Aucune trame émise. Commencez par FC1 puis FC3.</Text>
-        ) : (
-          log.map((l, i) => (
-            <Text
-              key={i}
-              style={[
-                styles.mono,
-                l.tone === 'red' && styles.logRed,
-                l.tone === 'accent' && styles.logAccent,
-                l.tone === 'amber' && styles.logAmber,
-              ]}
-            >
-              [{l.time}] {l.text}
-            </Text>
-          ))
-        )}
+        <ScrollView style={{ maxHeight: 230 }} nestedScrollEnabled showsVerticalScrollIndicator>
+          {log.length === 0 ? (
+            <Text style={styles.mono}>Aucune trame émise. Commencez par FC1 puis FC3.</Text>
+          ) : (
+            log.map((l, i) => (
+              <Text
+                key={i}
+                style={[
+                  styles.mono,
+                  l.tone === 'red' && styles.logRed,
+                  l.tone === 'accent' && styles.logAccent,
+                  l.tone === 'amber' && styles.logAmber,
+                ]}
+              >
+                [{l.time}] {l.text}
+              </Text>
+            ))
+          )}
+        </ScrollView>
       </Card>
 
       {allDone && (

@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Colors, Spacing } from '@/constants/theme';
 import ChoiceLab, { type LabPhase } from '@/labs/choice-lab';
 
 const OBJECTIVES = [
@@ -117,6 +120,94 @@ const PHASES: LabPhase[] = [
   },
 ];
 
+const STORE_COUNT = 12;
+const BASE = (i: number) => 2 + (i % 5);
+const LIMIT = (i: number) => (i === 4 ? 80 : i === 9 ? 74 : 46 + (i % 5));
+
+function tempColor(t: number) {
+  if (t <= 8) return Colors.blue;
+  if (t <= 20) return Colors.amber;
+  return Colors.red;
+}
+
+function DanfossVisual({ phaseIdx, allDone }: { phaseIdx: number; allDone: boolean }) {
+  const sabotaged = phaseIdx >= 4;
+  const defended = allDone;
+  const [temps, setTemps] = useState<number[]>(() => Array.from({ length: STORE_COUNT }, (_, i) => BASE(i)));
+  const [selected, setSelected] = useState<number | null>(null);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    timer.current = setInterval(() => {
+      setTemps((prev) => {
+        let changed = false;
+        const next = prev.map((t, i) => {
+          if (sabotaged && !defended) {
+            const target = LIMIT(i);
+            if (t < target) {
+              changed = true;
+              return Math.min(target, t + 4 + ((i * 7) % 5));
+            }
+          } else if (defended) {
+            const target = BASE(i);
+            if (t > target) {
+              changed = true;
+              return Math.max(target, t - 9);
+            }
+          }
+          return t;
+        });
+        return changed ? next : prev;
+      });
+    }, 900);
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
+  }, [sabotaged, defended]);
+
+  const statusText = defended
+    ? '✅ Retour au froid : interfaces masquées, contrôleurs patchés, sondes réarmées'
+    : sabotaged
+      ? '⚠ Dégivrage forcé en cours — alertes des sondes coupées dans les contrôleurs'
+      : 'Veille : consignes nominales sur les 12 magasins suivis (interfaces web exposées)';
+
+  return (
+    <View style={styles.panel}>
+      <Text style={styles.status}>{statusText}</Text>
+      <View style={styles.grid}>
+        {temps.map((t, i) => {
+          const active = selected === i;
+          return (
+            <Pressable
+              key={i}
+              onPress={() => setSelected(i)}
+              style={[styles.tile, active && styles.tileActive]}
+            >
+              <Text style={styles.tileIndex}>M{String(i + 1).padStart(2, '0')}</Text>
+              <Text style={[styles.tileTemp, { color: tempColor(t) }]}>
+                {Math.round(t)}°{t >= 70 ? ' 🔥' : ''}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={styles.hint}>Touchez un magasin pour inspecter son régulateur</Text>
+      {selected !== null && (
+        <View style={styles.detail}>
+          <Text style={styles.detailTitle}>Magasin {String(selected + 1).padStart(2, '0')} — régulateur Danfoss AK-SM800</Text>
+          <Text style={styles.detailLine}>Température mesurée : {Math.round(temps[selected])} °C</Text>
+          <Text style={[styles.detailLine, { color: sabotaged && !defended ? Colors.red : Colors.accent }]}>
+            Dégivrage : {sabotaged && !defended ? 'EN COURS — cycle sans limite de temps' : defended ? 'arrêté, consigne normale rétablie' : 'inactif'}
+          </Text>
+          <Text style={styles.detailLine}>
+            Alerte sonde : {defended ? 'réarmée (sonde autonome, hors du contrôleur)' : sabotaged ? 'coupée dans le contrôleur' : 'active (seuil 8 °C)'}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 export default function DanfossLab({ onCompleted }: { onCompleted: () => void }) {
   return (
     <ChoiceLab
@@ -124,14 +215,51 @@ export default function DanfossLab({ onCompleted }: { onCompleted: () => void })
       title="Dégivrage forcé : Danfoss (2026)"
       intro={
         'Scénario fondé sur l’incident réaliste du 11–12 octobre 2026 : des régulateurs de froid Danfoss exposés sur Internet (interfaces StoreView), contournement d’authentification documenté puis injection de commandes, dégivrage forcé pendant la nuit dans ≈700 magasins français.\n\n' +
-        'Vous rejouez la chaîne d’attaque étape par étape, puis vous vous mettez à la place de la défense.'
+        'Vous rejouez la chaîne d’attaque étape par étape sur un parc de 12 magasins — observez les températures, inspectez les régulateurs — puis vous vous mettez à la place de la défense.'
       }
       objectives={OBJECTIVES}
       phases={PHASES}
       finalNote={
         'À retenir : l’exposition directe d’interfaces OT sur Internet est le facteur clé, avec des modèles EOL jamais migrés et des alertes internes neutralisées. En conditions réelles : masquage des interfaces (pas d’admin public), mise à jour ou migration vers des versions supportées, alertes de température indépendantes (hors du contrôleur), supervision des cycles de dégivrage anormaux, et veille sur les bulletins des fournisseurs et des autorités (Claroty, CERT-FR, ANSSI).'
       }
+      visual={(phaseIdx, allDone) => <DanfossVisual phaseIdx={phaseIdx} allDone={allDone} />}
       onCompleted={onCompleted}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  panel: {
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  status: { color: Colors.muted, fontSize: 12, lineHeight: 17 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tile: {
+    width: '23%',
+    aspectRatio: 1.35,
+    borderRadius: 8,
+    backgroundColor: Colors.cardAlt,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tileActive: { borderColor: Colors.text },
+  tileIndex: { color: Colors.muted, fontSize: 10 },
+  tileTemp: { fontSize: 15, fontWeight: '800' },
+  hint: { color: Colors.muted, fontSize: 11 },
+  detail: {
+    backgroundColor: Colors.cardAlt,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.sm,
+  },
+  detailTitle: { color: Colors.text, fontWeight: '800', fontSize: 13, marginBottom: 4 },
+  detailLine: { color: Colors.muted, fontSize: 12, lineHeight: 18 },
+});
