@@ -38,7 +38,8 @@ export default function Ateliers() {
       <Text style={styles.note}>
         Ces ateliers simulent ce qu’un ingénieur cyber-OT rencontre : une écriture Modbus suspecte
         dans une consigne, un rebond récent du réseau bureautique vers le procédé, l’incident Danfoss
-        de 2026, un flux de logs mêlant trafic normal et hostile, une carte réseau à segmenter.
+        de 2026, le sabotage Stuxnet des centrifugeuses, un flux de logs mêlant trafic normal et
+        hostile, une carte réseau à segmenter.
         Traitez-les comme des exercices d’entraînement : décrivez votre raisonnement à voix haute
         avant de valider.
       </Text>

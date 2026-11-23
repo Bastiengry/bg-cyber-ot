@@ -29,6 +29,13 @@ export const LABS: readonly LabMeta[] = [
     tag: 'Attaque + défense',
   },
   {
+    id: 'stuxnet',
+    emoji: '⚙️',
+    title: 'Stuxnet : centrifugeuses sous sabotage',
+    subtitle: 'L’arme qui a traversé l’air gap : rejouez le sabotage des cascades IR-1, puis défendez',
+    tag: 'Attaque + défense',
+  },
+  {
     id: 'triage',
     emoji: '📰',
     title: 'Triage de journaux',

@@ -17,7 +17,7 @@ MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
   (Modbus, DNP3, S7comm, OPC UA), landmark attacks, secure architecture, hardening,
   detection & response, standards (IEC 62443, NIS2, ATT&CK for ICS).
 - **Validation quizzes** (35 questions, with explained answers, target score 80%).
-- **5 hands-on labs**:
+- **6 hands-on labs**:
   - **Modbus console under attack**: simulation of a PLC over Modbus/TCP — asset inventory,
     baseline, detection of an unauthorized FC6 write, incident response (restore the tampered value + block the intruder).
   - **IT → OT pivot (attack + defense)**: replay how a phished workstation pivots to the process
@@ -27,6 +27,10 @@ MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
     ~700 French supermarkets — internet-exposed controllers, auth bypass, command injection,
     unlimited defrost cycle — then the defense (remove exposure, patch/migrate EOL models, strict
     security level, temperature alerts outside the controller).
+  - **Stuxnet: sabotaged centrifuges (attack + defense)**: replay the June 2010 weapon against the
+    Natanz IR-1 cascades — air-gap breach via USB, S7-315/417 block injection with a Step 7 rootkit,
+    data replay to blind the control room, rotor frequency swinging 1 410 / 2 Hz — then the defense
+    (measurement independent from the controller, removable-media policy, signed program blocks).
   - **Log triage**: 12 logs from an industrial site to classify as normal / suspicious,
     with explanations.
   - **Purdue zoning**: place factory assets in the right levels (0-1, 2, 3, 3.5, 4-5).

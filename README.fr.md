@@ -16,7 +16,7 @@ Oldsmar).
   (Modbus, DNP3, S7comm, OPC UA), attaques marquantes, architecture sécurisée, durcissement,
   détection et réponse, référentiels (IEC 62443, NIS2, ATT&CK for ICS).
 - **Quiz de validation** (35 questions, corrigé commenté, objectif 80 %).
-- **5 ateliers pratiques** :
+- **6 ateliers pratiques** :
   - **Console Modbus sous attaque** : simulation d'un PLC en Modbus/TCP — inventaire, baseline,
     détection d'une écriture FC6 non autorisée, réponse (restauration de la valeur altérée + blocage de l'intrus).
   - **Pivot IT → OT (attaque + défense)** : rejouez la façon dont un poste bureautique compromis
@@ -27,6 +27,11 @@ Oldsmar).
 d'authentification, injection de commandes, dégivrage forcé sans limite — puis la défense
     (masquage des interfaces, patch/migration des modèles EOL, niveau de sécurité Strict, alertes
     de température indépendantes du contrôleur).
+  - **Stuxnet : centrifugeuses sous sabotage (attaque + défense)** : rejouez l'arme de 2010 contre
+    les cascades IR-1 de Natanz — franchissement de l'air gap par USB, injection de blocs dans les
+    S7-315/417 avec rootkit Step 7, rejeu des données pour aveugler la salle de contrôle, oscillation
+    des fréquences rotor 1 410 / 2 Hz — puis la défense (mesure indépendante du contrôleur, contrôle
+    des supports amovibles, blocs de programme signés).
   - **Triage de journaux** : 12 journaux d'un site industriel à classer normal / suspect, avec
     explications.
   - **Zonage Purdue** : replacer les actifs d'une usine dans les bons niveaux (0-1, 2, 3, 3.5, 4-5).

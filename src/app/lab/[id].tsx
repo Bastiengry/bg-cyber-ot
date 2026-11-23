@@ -8,6 +8,7 @@ import { useProgress } from '@/lib/progress';
 import ModbusLab from '@/labs/modbus-lab';
 import PivotLab from '@/labs/pivot-lab';
 import DanfossLab from '@/labs/danfoss-lab';
+import StuxnetLab from '@/labs/stuxnet-lab';
 import TriageLab from '@/labs/triage-lab';
 import ZonageLab from '@/labs/zonage-lab';
 
@@ -50,6 +51,14 @@ export default function LabScreen() {
     );
   }
 
+  if (id === 'stuxnet') {
+    return (
+      <Screen>
+        <StuxnetLab onCompleted={() => onComplete()} />
+      </Screen>
+    );
+  }
+
   if (id === 'triage') {
     return (
       <Screen>
@@ -71,7 +80,7 @@ export default function LabScreen() {
       <Card>
         <Text style={{ color: Colors.text, fontWeight: '700' }}>Atelier introuvable</Text>
         <Text style={{ color: Colors.muted, marginTop: Spacing.sm }}>
-        Ateliers disponibles : modbus, pivot, danfoss, triage, zonage.
+        Ateliers disponibles : modbus, pivot, danfoss, stuxnet, triage, zonage.
       </Text>
       </Card>
     </Screen>
