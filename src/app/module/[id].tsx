@@ -1,14 +1,31 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Card, Pill, PrimaryButton, Screen } from '@/components/ui';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { COURSE_MODULES } from '@/data/courses';
+import { exportCourseDoc, exportCoursePdf } from '@/lib/export';
 import { useProgress } from '@/lib/progress';
 
 export default function ModuleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const mod = COURSE_MODULES.find((m) => m.id === id);
   const { isLessonDone, markLessonDone, isQuizDone, state } = useProgress();
+  const [busy, setBusy] = useState<'pdf' | 'doc' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const runExport = async (kind: 'pdf' | 'doc') => {
+    if (!mod) return;
+    setBusy(kind);
+    setError(null);
+    try {
+      await (kind === 'pdf' ? exportCoursePdf(mod.id) : exportCourseDoc(mod.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Export impossible sur cet appareil');
+    } finally {
+      setBusy(null);
+    }
+  };
 
   if (!mod) {
     return (
@@ -32,6 +49,14 @@ export default function ModuleScreen() {
         <Pill label={mod.level} tone={mod.level === 'Débutant' ? 'accent' : mod.level === 'Intermédiaire' ? 'blue' : 'amber'} />
         <Pill label={`${mod.lessons.length} leçons`} />
       </View>
+
+      <Card style={{ marginBottom: Spacing.lg }}>
+        <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+          <PrimaryButton label={busy === 'pdf' ? 'Génération…' : 'Module en PDF'} tone="blue" disabled={busy !== null} onPress={() => runExport('pdf')} style={{ flex: 1 }} />
+          <PrimaryButton label={busy === 'doc' ? 'Génération…' : 'Module en Word'} tone="accent" disabled={busy !== null} onPress={() => runExport('doc')} style={{ flex: 1 }} />
+        </View>
+        {error && <Text style={styles.exportError}>{error}</Text>}
+      </Card>
 
       <View style={styles.lessonsList}>
         {mod.lessons.map((lesson, i) => {
@@ -84,6 +109,7 @@ const styles = StyleSheet.create({
   moduleSub: { color: Colors.muted, fontSize: 14, marginTop: 4 },
   pillRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md, marginBottom: Spacing.lg },
   lessonsList: { gap: Spacing.md, marginBottom: Spacing.lg },
+  exportError: { color: Colors.red, fontSize: 12, marginTop: Spacing.sm },
   doneCard: { borderColor: Colors.accent },
   lessonIndex: {
     color: Colors.muted,
