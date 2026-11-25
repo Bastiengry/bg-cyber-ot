@@ -55,6 +55,7 @@ export default function ModuleScreen() {
           <PrimaryButton label={busy === 'pdf' ? 'Génération…' : 'Module en PDF'} tone="blue" disabled={busy !== null} onPress={() => runExport('pdf')} style={{ flex: 1 }} />
           <PrimaryButton label={busy === 'doc' ? 'Génération…' : 'Module en Word'} tone="accent" disabled={busy !== null} onPress={() => runExport('doc')} style={{ flex: 1 }} />
         </View>
+        <Text style={styles.exportHint}>Pour tout le cours en un seul document : onglet Cours → « Exporter le cours complet ».</Text>
         {error && <Text style={styles.exportError}>{error}</Text>}
       </Card>
 
@@ -110,6 +111,7 @@ const styles = StyleSheet.create({
   pillRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md, marginBottom: Spacing.lg },
   lessonsList: { gap: Spacing.md, marginBottom: Spacing.lg },
   exportError: { color: Colors.red, fontSize: 12, marginTop: Spacing.sm },
+  exportHint: { color: Colors.muted, fontSize: 12, marginTop: Spacing.sm },
   doneCard: { borderColor: Colors.accent },
   lessonIndex: {
     color: Colors.muted,

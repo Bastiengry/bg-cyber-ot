@@ -35,7 +35,7 @@ export default function Cours() {
       <Title subtitle="De zéro jusqu’aux situations d’incident réelles">Programme de formation</Title>
 
       <Card style={{ marginBottom: Spacing.lg }}>
-        <Text style={styles.exportTitle}>Exporter le cours (7 modules, 21 leçons)</Text>
+        <Text style={styles.exportTitle}>Exporter le cours complet en un seul document (7 modules, 21 leçons)</Text>
         <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
           <PrimaryButton
             label={busy === 'pdf' ? 'Génération…' : 'PDF'}

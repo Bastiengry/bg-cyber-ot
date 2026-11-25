@@ -20,14 +20,33 @@ const DOC_CSS = `
   .keys-title { font-weight: 700; font-size: 13px; margin: 0 0 6px 0; }
   .keys ul { margin: 0; padding-left: 18px; }
   .keys li { font-size: 13.5px; margin: 3px 0; }
+  .toc { border: 1px solid #d7dee6; border-radius: 8px; padding: 14px 20px; margin: 24px 0 8px 0; }
+  .toc ol { margin: 0; padding-left: 20px; }
+  .toc a { color: #1a2230; text-decoration: none; }
+  .toc li { font-size: 14px; margin: 5px 0; }
+  .toc .lvl { color: #8a97a5; font-size: 12px; }
+  .mod { page-break-before: always; }
   p { font-size: 14px; margin: 8px 0; }
   footer { margin-top: 48px; border-top: 1px solid #d7dee6; padding-top: 10px; color: #8a97a5; font-size: 11px; }
 `;
 
 export function buildCourseHtml(moduleId?: string): string {
-  const mods = moduleId ? COURSE_MODULES.filter((m) => m.id === moduleId) : COURSE_MODULES;
-  const title = moduleId ? mods[0].title : 'Formation Cybersécurité OT — cours complet';
+  const found = moduleId ? COURSE_MODULES.filter((m) => m.id === moduleId) : [];
+  const mods = found.length > 0 ? found : COURSE_MODULES;
+  const fullCourse = mods.length === COURSE_MODULES.length;
+  const title = fullCourse ? 'Formation Cybersécurité OT — cours complet' : mods[0].title;
 
+  const toc = fullCourse
+    ? `\n  <div class="toc">
+      <p class="keys-title">Sommaire</p>
+      <ol>${mods
+        .map(
+          (m) => `<li><a href="#mod-${esc(m.id)}">${esc(m.emoji)} ${esc(m.title)}</a>
+            <span class="lvl">· ${esc(m.level)} · ${m.lessons.length} leçons</span></li>`,
+        )
+        .join('')}</ol>
+    </div>`
+    : '';
   const sections = mods
     .map((mod, mi) => {
       const lessons = mod.lessons
@@ -44,7 +63,7 @@ export function buildCourseHtml(moduleId?: string): string {
         )
         .join('\n');
       return `
-      <h2>${mod.emoji} ${mi + 1}. ${esc(mod.title)}</h2>
+      <h2 id="mod-${esc(mod.id)}" class="${fullCourse ? 'mod' : ''}">${mod.emoji} ${mi + 1}. ${esc(mod.title)}</h2>
       <p class="subtitle">${esc(mod.subtitle)} · Niveau : ${esc(mod.level)} · ${mod.lessons.length} leçons</p>
       ${lessons}`;
     })
@@ -62,6 +81,7 @@ export function buildCourseHtml(moduleId?: string): string {
 <body>
   <h1>${esc(title)}</h1>
   <p class="meta">BG Cyber OT · Entraînement à la cybersécurité industrielle</p>
+  ${toc}
   ${sections}
   <footer>BG Cyber OT — export du ${esc(date)}. Contenu de formation : à employer dans un cadre légal et pédagogique uniquement.</footer>
 </body>
