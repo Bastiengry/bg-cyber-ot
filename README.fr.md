@@ -37,6 +37,8 @@ d'authentification, injection de commandes, dégivrage forcé sans limite — pu
   - **Zonage Purdue** : replacer les actifs d'une usine dans les bons niveaux (0-1, 2, 3, 3.5, 4-5).
 - **Progression persistée** localement (AsyncStorage) : leçons lues, meilleurs scores, ateliers
   terminés.
+- **Export du cours** : téléchargez le cours complet (ou un seul module) en PDF ou en document
+  compatible Word directement depuis l'app (onglet Cours et pages module).
 
 ## Démarrage
 

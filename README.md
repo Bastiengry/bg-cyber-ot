@@ -35,6 +35,7 @@ MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
     with explanations.
   - **Purdue zoning**: place factory assets in the right levels (0-1, 2, 3, 3.5, 4-5).
 - **Progress persistence** (AsyncStorage): lessons read, best quiz scores, labs completed.
+- **Course export**: download the full course (or a single module) as a PDF or a Word-compatible document directly from the app (Courses tab and module screens).
 
 ## Getting started
 
