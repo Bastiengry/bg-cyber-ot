@@ -49,4 +49,18 @@ export const LABS: readonly LabMeta[] = [
     subtitle: 'Placez les actifs d’une usine dans les bonnes zones',
     tag: 'Architecture',
   },
+  {
+    id: 'opcua',
+    emoji: '🔐',
+    title: 'OPC UA : passerelle en mode None',
+    subtitle: 'Découverte, lecture et écriture sans authentification, puis durcissement complet',
+    tag: 'Protocoles',
+  },
+  {
+    id: 'zones62443',
+    emoji: '🧱',
+    title: 'Atelier IEC 62443',
+    subtitle: 'Zones, conduits, Security Levels et leur traduction en VLAN/ACL',
+    tag: 'Architecture',
+  },
 ] as const;

@@ -7,6 +7,9 @@ import { COURSE_MODULES } from '@/data/courses';
 import { exportCourseDoc, exportCoursePdf } from '@/lib/export';
 import { useProgress } from '@/lib/progress';
 
+const TOTAL_MODULES = COURSE_MODULES.length;
+const TOTAL_LESSONS = COURSE_MODULES.reduce((n, m) => n + m.lessons.length, 0);
+
 const LEVEL_TONE = {
   'Débutant': 'accent',
   'Intermédiaire': 'blue',
@@ -35,7 +38,7 @@ export default function Cours() {
       <Title subtitle="De zéro jusqu’aux situations d’incident réelles">Programme de formation</Title>
 
       <Card style={{ marginBottom: Spacing.lg }}>
-        <Text style={styles.exportTitle}>Exporter le cours complet en un seul document (7 modules, 21 leçons)</Text>
+        <Text style={styles.exportTitle}>{`Exporter le cours complet en un seul document (${TOTAL_MODULES} modules, ${TOTAL_LESSONS} leçons)`}</Text>
         <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
           <PrimaryButton
             label={busy === 'pdf' ? 'Génération…' : 'PDF'}

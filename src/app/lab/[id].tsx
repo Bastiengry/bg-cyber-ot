@@ -11,6 +11,8 @@ import DanfossLab from '@/labs/danfoss-lab';
 import StuxnetLab from '@/labs/stuxnet-lab';
 import TriageLab from '@/labs/triage-lab';
 import ZonageLab from '@/labs/zonage-lab';
+import OpcUaLab from '@/labs/opcua-lab';
+import Zones62443Lab from '@/labs/zones62443-lab';
 
 export default function LabScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -75,12 +77,28 @@ export default function LabScreen() {
     );
   }
 
+  if (id === 'opcua') {
+    return (
+      <Screen>
+        <OpcUaLab onCompleted={() => onComplete()} />
+      </Screen>
+    );
+  }
+
+  if (id === 'zones62443') {
+    return (
+      <Screen>
+        <Zones62443Lab onCompleted={() => onComplete()} />
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <Card>
         <Text style={{ color: Colors.text, fontWeight: '700' }}>Atelier introuvable</Text>
         <Text style={{ color: Colors.muted, marginTop: Spacing.sm }}>
-        Ateliers disponibles : modbus, pivot, danfoss, stuxnet, triage, zonage.
+        Ateliers disponibles : modbus, pivot, danfoss, stuxnet, triage, zonage, opcua, zones62443.
       </Text>
       </Card>
     </Screen>

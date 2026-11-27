@@ -12,11 +12,12 @@ Oldsmar).
 
 ## Contenu
 
-- **7 modules de cours** (21 leçons) en français : fondamentaux IT/OT, protocoles industriels
+- **10 modules de cours** (30 leçons) en français : fondamentaux IT/OT, protocoles industriels
   (Modbus, DNP3, S7comm, OPC UA), attaques marquantes, architecture sécurisée, durcissement,
-  détection et réponse, référentiels (IEC 62443, NIS2, ATT&CK for ICS).
-- **Quiz de validation** (35 questions, corrigé commenté, objectif 80 %).
-- **6 ateliers pratiques** :
+  détection et réponse, référentiels (IEC 62443, NIS2, ATT&CK for ICS), plus des modules
+  approfondis **Modbus/TCP**, **sécurité OPC UA** et **mise en œuvre IEC 62443**.
+- **Quiz de validation** (51 questions, corrigé commenté, objectif 80 %).
+- **8 ateliers pratiques** :
   - **Console Modbus sous attaque** : simulation d'un PLC en Modbus/TCP — inventaire, baseline,
     détection d'une écriture FC6 non autorisée, réponse (restauration de la valeur altérée + blocage de l'intrus).
   - **Pivot IT → OT (attaque + défense)** : rejouez la façon dont un poste bureautique compromis
@@ -34,6 +35,11 @@ d'authentification, injection de commandes, dégivrage forcé sans limite — pu
     des supports amovibles, blocs de programme signés).
   - **Triage de journaux** : 12 journaux d'un site industriel à classer normal / suspect, avec
     explications.
+  - **Passerelle OPC UA (attaque + défense)** : exploitez un serveur SecurityPolicy=None
+    (découverte des endpoints, lecture en clair, écriture sans authentification), puis durcissez :
+    SignAndEncrypt, confiance par certificats, rôles utilisateurs, conduit réseau verrouillé.
+  - **Atelier IEC 62443** : déroulez la méthode complète 62443-3-2 sur un site au réseau plat —
+    zones, conduits nommés, Security Levels cibles, puis traduction en VLAN et ACL Cisco.
   - **Zonage Purdue** : replacer les actifs d'une usine dans les bons niveaux (0-1, 2, 3, 3.5, 4-5).
 - **Progression persistée** localement (AsyncStorage) : leçons lues, meilleurs scores, ateliers
   terminés.

@@ -393,4 +393,167 @@ export const COURSE_MODULES: CourseModule[] = [
       },
     ],
   },
+
+  {
+    id: 'modbus-tcp',
+    title: 'Modbus/TCP en profondeur',
+    subtitle: 'Trames, registres, absence de sécurité et durcissement du protocole le plus répandu',
+    emoji: '🔌',
+    level: 'Intermédiaire',
+    lessons: [
+      {
+        id: 'modbus-fil-trame',
+        title: 'Sur le fil : MBAP, codes fonction et registres',
+        duration: '9 min',
+        body: [
+          'Une trame Modbus/TCP commence par un en-tête MBAP de 7 octets : identifiant de transaction (2), identifiant de protocole (2, toujours 0), longueur (2) et identifiant d’unité (1). Suit la PDU : un code fonction (FC) sur 1 octet puis les données. FC 1/2 lisent des bits (bobines, entrées discrètes), FC 3/4 lisent des mots (registres holding, registres d’entrée), FC 5/6 écrivent un bit ou un mot, FC 15/16 écrivent en bloc. Les réponses d’erreur portent le FC + 0x80 et un code d’exception : 01 fonction illégale, 02 adresse illégale, 06 esclave occupé.',
+          'La numérotation des registres est un piège classique : l’adresse « 40001 » de la documentation est une convention humaine (bloc 4xxxx = registres holding), la vraie adresse sur le fil est l’offset 0. De nombreux incidents de debug — et de nombreuses erreurs d’attaque — viennent de ce décalage d’un. Lire le registre 100 en FC3, c’est demander offset 100, soit le « 40101 » de la doc.',
+          'Sur le réseau, une session Modbus se réduit souvent à du polling : le maître (superviseur) interroge en boucle quelques dizaines de registres toutes les 100 à 1000 ms. Cette régularité est une mine d’or pour la détection : toute rupture du rythme, tout FC jamais vu, toute écriture hors fenêtre planifiée saute aux yeux d’un parseur passif.',
+        ],
+        keyPoints: [
+          'MBAP 7 octets + PDU (FC + données) : la trame tient en quelques lignes.',
+          'FC 3/4 = lecture, FC 5/6/15/16 = écriture ; exceptions 01/02/06 à connaître.',
+          '« 40001 » de la doc = offset 0 sur le fil : attention au décalage.',
+        ],
+      },
+      {
+        id: 'modbus-sans-auth',
+        title: 'Aucune authentification : ce que cela implique',
+        duration: '8 min',
+        body: [
+          'Modbus/TCP de base n’embarque ni authentification, ni chiffrement, ni contrôle d’intégrité : pas de mot de passe, pas de certificat, pas de compteur anti-rejeu. Quiconque peut ouvrir une session TCP sur le port 502 d’un automate peut lire tous les registres (mémoire vive du procédé) et écrire partout où l’application l’autorise, avec un simple client open source.',
+          'Côté attaque, la chaîne est courte : découverte du port 502 (nmap, scripts modbus-discover), lecture massive des registres pour reconstruire le procédé, puis écriture ciblée par FC 6 ou FC 16 — une consigne, un compteur, un bit de défaut. Le rejeu est trivial : les trames ne comportent ni horodatage ni nonce. Le seul garde-fou possible est ailleurs : le réseau et l’application.',
+          'Pour le défenseur, cela fixe la doctrine : le port 502 ne doit jamais être joignable depuis l’IT ni depuis Internet ; la lecture des registres constitue la baseline de référence ; toute écriture Modbus doit être exception, planifiée et traçable. MITRE ATT&CK for ICS documente ces techniques (T0886 : commande hors fenêtre, T0843 : écriture de programme…).',
+        ],
+        keyPoints: [
+          'Zéro auth, zéro chiffrement dans Modbus/TCP : 502 ouvert = lecture + écriture.',
+          'Rejeu trivial (pas d’horodatage ni de nonce) : la protection est réseau, pas protocole.',
+          'Baseline des registres + fenêtres d’écriture = socle de la détection.',
+        ],
+      },
+      {
+        id: 'modbus-durcir',
+        title: 'Durcir Modbus : défense en profondeur',
+        duration: '9 min',
+        body: [
+          'On ne chiffrera pas Modbus : le protocole ne le prévoit pas (des variantes propriétaires existent, rarement déployées). La défense se joue donc en couches : segmentation d’abord — un VLAN dédié par cellule ou ligne, des ACL qui n’autorisent le 502 que depuis le superviseur et l’historian, et l’interdiction absolue de routage IT → 502.',
+          'Ensuite, interposer : un proxy Modbus (ou une règle de pare-feu applicatif) qui filtre par code fonction et par registre — par exemple, n’autoriser la lecture (FC 3/4) que depuis le niveau 2/3, et ne tolérer les écritures (FC 6/16) que depuis le serveur d’ingénierie, pendant les fenêtres de maintenance. Pour l’export de données vers l’IT (MES, ERP), une diode de données garantit l’absence de chemin de retour.',
+          'Enfin, surveiller : un parseur passif qui apprend la baseline (quels registres, quels FC, quelles adresses sources, quel rythme) et alerte sur toute déviation — écriture hors fenêtre, FC jamais observé, requête d’une IP inconnue. Modbus est si prévisible qu’un comportement anormal est un signal très fort.',
+        ],
+        keyPoints: [
+          'VLAN dédié + ACL stricte sur le 502 : seuls superviseur et historien y accèdent.',
+          'Proxy filtrant par FC et registre ; diode de données pour l’export OT → IT.',
+          'Parseur passif : baseline + écritures hors fenêtre = alertes de premier rang.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'opc-ua',
+    title: 'OPC UA et sa sécurité',
+    subtitle: 'Le protocole moderne de l’industrie : bien conçu, souvent mal configuré',
+    emoji: '🔐',
+    level: 'Avancé',
+    lessons: [
+      {
+        id: 'opcua-modele',
+        title: 'Un protocole pensé avec la sécurité',
+        duration: '8 min',
+        body: [
+          'OPC UA (IEC 62541) succède à l’OPC classique fondé sur COM/DCOM, dont la traversée de pare-feu était un cauchemar. Il apporte un modèle de données objet (nœuds, variables, méthodes, événements), des sessions avec abonnements (le serveur pousse les changements de valeur au lieu du polling), et un empilement de sécurité natif — une nouveauté majeure face à Modbus ou S7comm.',
+          'La sécurité s’exprime par deux paramètres, négociés à chaque connexion via l’opération GetEndpoints : la SecurityPolicy (None, Basic256Sha256, Aes256_Sha256_RsaPss…) qui définit les algorithmes, et le MessageSecurityMode (None, Sign, SignAndEncrypt) qui dit si les messages sont signés et/ou chiffrés. Les applications (client et serveur) s’authentifient mutuellement par des certificats X.509 qu’elles échangent et approuvent.',
+          'Les utilisateurs, eux, s’authentifient de trois façons possibles : anonyme, par identifiant/mot de passe (éventuellement adossé à l’Active Directory), ou par certificat utilisateur. Le serveur applique ensuite son modèle de rôles (RoleSet) pour autoriser lecture, écriture ou exécution de méthodes.',
+        ],
+        keyPoints: [
+          'Port binaire 4840 ; sessions + abonnements remplacent le polling.',
+          'GetEndpoints révèle SecurityPolicy et MessageSecurityMode supportés.',
+          'Auth applicative par certificats X.509 ; auth utilisateur anonyme / login / certificat.',
+        ],
+      },
+      {
+        id: 'opcua-none',
+        title: 'Le piège du mode None',
+        duration: '8 min',
+        body: [
+          'Par facilité d’intégration — compatibilité avec les vieux clients, débogage, « ce n’est qu’un réseau interne » — de très nombreux serveurs OPC UA sont déployés avec SecurityPolicy=None et MessageSecurityMode=None. Conséquence : les trames sont lisibles en clair (valeurs, noms de variables, topologie du procédé) et le serveur n’exige aucune preuve d’identité du client.',
+          'Un attaquant positionné sur le réseau découvre le serveur (port 4840, nmap ou client UA), interroge GetEndpoints pour obtenir la carte d’identité de la configuration, puis se comporte comme n’importe quel client légitime : lecture des variables, écriture des consignes, appel de méthodes. Tout ce que Modbus offre à l’attaquant, OPC UA en mode None le lui offre aussi — avec en bonus une vision structurée du procédé.',
+          'Les chercheurs (Claroty Team82, entre autres) ont recensé des serveurs OPC UA exposés directement sur Internet, et plusieurs incidents industriels ont impliqué des canaux OPC UA mal sécurisés. Le mode None n’est pas toujours une faute : sur un VLAN cellulaire fermé, derrière un pare-feu, le compromis peut être assumé. Sur un réseau partagé avec l’IT, c’est une impasse.',
+        ],
+        keyPoints: [
+          'None = ni chiffrement, ni signature, ni authentification du client.',
+          'GetEndpoints = carte d’identité du serveur, interrogée par n’importe qui.',
+          'None acceptable uniquement sur un segment fermé et documenté comme tel.',
+        ],
+      },
+      {
+        id: 'opcua-durcir',
+        title: 'Durcir une infrastructure OPC UA',
+        duration: '9 min',
+        body: [
+          'Premier verrou : imposer SignAndEncrypt avec une politique moderne — Basic256Sha256 au minimum, Aes256_Sha256_RsaPss si les clients le supportent. Bannir Basic128Rsa15 et Basic256 (algorithmes cassés) et rejeter purement et simplement les sessions négociées en None sur les serveurs exposés au-delà du VLAN cellulaire.',
+          'Deuxième verrou : les certificats. Une PKI industrielle (ou un serveur GDS, Global Discovery Server, pour les grandes flottes) émet et renouvelle les certificats applicatifs ; l’approbation manuelle systématique remplace l’acceptation automatique des pairs, qui réduit la confiance mutuelle à une formalité. Surveiller les dates d’expiration, stocker les clés protégées, révoquer proprement les appareils sortis du parc.',
+          'Troisième verrou : l’accès. Comptes nominatifs plutôt qu’anonymous, rôles OPC UA calés sur le besoin (lecture seule pour la supervision, écriture réservée au régulation), endpoint jamais joignable depuis l’IT (passerelle + flux explicites), et monitoring : alerte sur certificat invalide, session anonyme, écriture inhabituelle ou méthode exécutée hors fenêtre.',
+        ],
+        keyPoints: [
+          'SignAndEncrypt + Basic256Sha256 minimum ; bannir Basic128Rsa15/Basic256.',
+          'PKI/GDS + approbation manuelle des certificats pairs, pas d’auto-approbation.',
+          'Comptes nominatifs, rôles limités, endpoint jamais exposé à l’IT.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'iec-62443',
+    title: 'IEC 62443 : la norme de référence',
+    subtitle: 'Zones, conduits, Security Levels : traduire la norme en architecture réelle',
+    emoji: '🧱',
+    level: 'Avancé',
+    lessons: [
+      {
+        id: '62443-panorama',
+        title: 'La norme, ses parties et ses acteurs',
+        duration: '8 min',
+        body: [
+          'IEC 62443 est la série de normes de cybersécurité pour les systèmes de contrôle industriel (IACS). Sa force est de couvrir toute la chaîne : les parties -1 posent les concepts, les parties -2 traitent des politiques et processus (2-1 pour l’exploitant, 2-4 pour les fournisseurs de maintenance), les parties -3 couvrent la gestion du risque (3-2 : analyse de risque et zonage), et les parties -4 les exigences sur les produits (4-1 : cycle de développement sécurisé, 4-2 : exigences techniques sur les composants).',
+          'La norme définit quatre rôles avec leurs responsabilités : l’exploitant (asset owner) qui porte le risque, le fournisseur de services (maintenance, intégration), l’intégrateur de systèmes qui conçoit l’architecture, et le fournisseur de produits. Ce vocabulaire partagé sert de base contractuelle : on peut exiger d’un fournisseur un produit conforme 62443-4-2 niveau SL 2, ou d’un intégrateur une architecture documentée selon 3-2.',
+          'Retenir la logique d’ensemble : 62443 ne prescrit pas d’équipements ni de marques, elle définit un processus et des exigences mesurables. Le travail de l’exploitant est de traduire ces exigences en décisions concrètes : VLAN, ACL, comptes, sauvegardes, maintenance.',
+        ],
+        keyPoints: [
+          'Une norme = quatre familles : concepts, processus, gestion du risque, produits.',
+          '62443-3-2 (zonage et SL cibles) et 62443-4-2 (exigences produits) sont les plus utilisées.',
+          'Quatre rôles aux responsabilités contractuelles explicites.',
+        ],
+      },
+      {
+        id: '62443-zones',
+        title: 'Zones et conduits',
+        duration: '9 min',
+        body: [
+          'Le modèle central de 62443-3-2 est simple : découper l’IACS en zones (zones de sécurité) reliées par des conduits. Une zone regroupe des actifs aux exigences communes — par exemple un automate, ses capteurs et sa régulation locale. Un conduit est un canal de communication maîtrisé entre deux zones : un flux nommé, décrit (protocoles, ports, sens), et filtré — tout le reste est interdit.',
+          'Chaque zone reçoit une Security Level cible (SL 1 à 4) : SL 1 protège contre l’erreur ou l’usage accidentel ; SL 2 contre l’attaquant intentionnel et simple ; SL 3 contre un attaquant intentionnel aux moyens sophistiqués (outils spécialisés, ingénierie sociale) ; SL 4 contre un adversaire étatique. La SL cible découle de l’évaluation des menaces sur la zone : conséquence sur le procédé, motivation d’un attaquant, exposition.',
+          'Règle d’or souvent violée : la SL d’une zone ne peut pas dépendre de la bonne volonté de ses voisines. Une zone de niveau 2 reliée à une zone de niveau 4 exige un conduit contrôlé au niveau 4 (filtrage strict, contrôle applicatif) — sinon la zone la plus faible devient la porte d’entrée de la plus forte. C’est exactement la leçon du pivot IT → OT.',
+        ],
+        keyPoints: [
+          'Zone = actifs + exigences communes ; conduit = flux nommé et filtré.',
+          'SL 1 (accidentel) → SL 4 (adversaire étatique) : SL cible issue de l’analyse de menaces.',
+          'Le conduit vers une zone sensible est contrôlé au niveau de cette zone.',
+        ],
+      },
+      {
+        id: '62443-mise-en-oeuvre',
+        title: 'Passer du papier au réel',
+        duration: '9 min',
+        body: [
+          'La démarche 62443-3-2 tient en cinq pas : inventaire des actifs (avec leurs données critiques) ; partitionnement en zones ; évaluation des menaces zone par zone ; fixation des SL cibles ; choix des contre-mesures pour combler l’écart entre SL cible et SL atteinte. Les contre-mesures s’organisent en sept familles (FR) : FR1 identification et authentification, FR2 contrôle d’accès, FR3 intégrité du système, FR4 confidentialité, FR5 restriction des flux de données, FR6 réponse rapide aux incidents, FR7 disponibilité des ressources.',
+          'Côté produits, l’exploitant ne développe rien : il exige. Demander aux fournisseurs les déclarations de conformité 62443-4-2 (quelles SR/CR sont couvertes, à quel SL), intégrer ces exigences dans les cahiers des charges, et ne plus accepter un automate « sans aucune capacité d’authentification ni de journalisation » sans contre-mesures documentées.',
+          'La mise en œuvre concrète — le vrai travail — traduit chaque exigence en décision : un VLAN par zone, une ACL par conduit, des comptes nominatifs (FR1), des sauvegardes testées (FR7), un journal centralisé en lecture seule (FR3/FR6), des fenêtres de maintenance (FR2). Et elle se maintient : revue des zones à chaque évolution d’architecture, tests annuels, dossier 62443 vivant et non archivé.',
+        ],
+        keyPoints: [
+          '5 pas : inventaire → zones → menaces → SL cibles → contre-mesures.',
+          'FR1 à FR7 : les sept familles de contre-mesures à couvrir.',
+          'Exiger 62443-4-2 des fournisseurs ; tenir le dossier à jour, pas un document d’audit figé.',
+        ],
+      },
+    ],
+  },
 ];

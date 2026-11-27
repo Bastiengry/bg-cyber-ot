@@ -13,11 +13,12 @@ MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
 
 ## Content
 
-- **7 course modules** (21 lessons, in French): IT/OT fundamentals, industrial protocols
+- **10 course modules** (30 lessons, in French): IT/OT fundamentals, industrial protocols
   (Modbus, DNP3, S7comm, OPC UA), landmark attacks, secure architecture, hardening,
-  detection & response, standards (IEC 62443, NIS2, ATT&CK for ICS).
-- **Validation quizzes** (35 questions, with explained answers, target score 80%).
-- **6 hands-on labs**:
+  detection & response, standards (IEC 62443, NIS2, ATT&CK for ICS), plus deep dives on
+  **Modbus/TCP**, **OPC UA security** and **IEC 62443** implementation.
+- **Validation quizzes** (51 questions, with explained answers, target score 80%).
+- **8 hands-on labs**:
   - **Modbus console under attack**: simulation of a PLC over Modbus/TCP — asset inventory,
     baseline, detection of an unauthorized FC6 write, incident response (restore the tampered value + block the intruder).
   - **IT → OT pivot (attack + defense)**: replay how a phished workstation pivots to the process
@@ -33,6 +34,11 @@ MITRE ATT&CK for ICS and real incidents (Stuxnet, Industroyer, TRITON, Oldsmar).
     (measurement independent from the controller, removable-media policy, signed program blocks).
   - **Log triage**: 12 logs from an industrial site to classify as normal / suspicious,
     with explanations.
+  - **OPC UA gateway (attack + defense)**: exploit a SecurityPolicy=None server (endpoint
+    discovery, clear-text reads, unauthenticated writes), then harden it: SignAndEncrypt,
+    certificate trust, user roles, locked-down network conduit.
+  - **IEC 62443 workshop**: run the full 62443-3-2 method on a flat-network plant — zones,
+    named conduits, target Security Levels, and their translation into Cisco VLANs and ACLs.
   - **Purdue zoning**: place factory assets in the right levels (0-1, 2, 3, 3.5, 4-5).
 - **Progress persistence** (AsyncStorage): lessons read, best quiz scores, labs completed.
 - **Course export**: download the full course (or a single module) as a PDF or a Word-compatible document directly from the app (Courses tab and module screens).
