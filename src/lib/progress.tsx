@@ -17,7 +17,7 @@ export type ProgressState = {
 
 const EMPTY: ProgressState = { lessonsDone: [], quizScores: {}, labsDone: [] };
 
-type ProgressApi = {
+export type ProgressApi = {
   state: ProgressState;
   ready: boolean;
   markLessonDone: (lessonId: string) => void;

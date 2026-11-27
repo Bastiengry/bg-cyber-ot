@@ -79,7 +79,20 @@ A prebuilt signed APK is available in [`apk/`](./apk).
 ```bash
 npx tsc --noEmit   # typecheck
 npx expo lint      # lint
+npm test           # unit tests (jest-expo)
 ```
+
+## Tests
+
+The app ships with a unit test suite (jest + jest-expo, 75 tests across 9 suites):
+
+- **Data integrity** — course modules, quiz questions, lab registry and lab datasets (unique ids, valid levels/answers, every module covered).
+- **Export** — HTML/PDF/Word generation: table of contents, anchors, page breaks, per-module export, file sharing mocks.
+- **Progression** — ProgressProvider against a mocked AsyncStorage: lessons, quiz best scores, labs, totals, corrupted-storage recovery.
+- **UI kit** — Title, Pill, ProgressBar, PrimaryButton, Card, Screen.
+- **Labs** — ChoiceLab engine (shuffle, wrong answers, command terminal, USB animation) plus full playthroughs of the Pivot IT→OT, Danfoss, Stuxnet, Modbus, Triage and Zonage labs.
+
+Run `npm test` (add `-- --coverage` for a coverage report, ~90 % lines).
 
 ## Stack
 
